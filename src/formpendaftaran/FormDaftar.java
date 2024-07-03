@@ -4,10 +4,7 @@
  */
 package formpendaftaran;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 /**
@@ -21,91 +18,38 @@ public class FormDaftar extends javax.swing.JFrame {
      */
     public FormDaftar() {
         initComponents();
-        load_data();
         IDotomatis();
     }
-
-    public void load_data(){
-        try {
-            konekDb rama = new konekDb();
-            Connection con = rama.Buka();
-            Object header[]={"nodaftar","nama","tanggal","email","no_hp","jalur","prodi"};
-            DefaultTableModel data = new DefaultTableModel(null, header);
-            formdaftar.setModel(data);
-            String strsql = "SELECT * FROM anggota";
-            
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery(strsql);
-            while(rs.next()){
-                String d1 = rs.getString(1);
-                String d2 = rs.getString(2);
-                String d3 = rs.getString(3);
-                String d4 = rs.getString(4);
-                String d5 = rs.getString(5);
-                String d6 = rs.getString(6);
-                
-                String d[] = {d1,d2,d3,d4,d5,d6};
-                data.addRow(d);
-            }
-        }
-        catch(SQLException e)
-        {
-            JOptionPane.showMessageDialog(null ,e);
-        }
-    }
     
-    private void input_data(){
-        try{
-            konekDb rama = new konekDb();
-            Connection con = rama.Buka();            
-            Statement st = con.createStatement();
+    private void input_data() {
+    try {
+        konekDb rama = new konekDb();
+        Connection con = rama.Buka();            
+        Statement st = con.createStatement();
 
-            String strsql = "INSERT INTO formdaftar VALUES('"+nodaftar.getText()+"','"+nama.getText()+"','"+tgl.getText()+"','"+email.getText()+"','"+nohp.getText()+"','"+jalur.getSelectedItem()+"','"+prodi.getSelectedItem()+"')";
-            st.execute(strsql);
-            JOptionPane.showMessageDialog(this , "Data Anggota Berhasil Disimpan");
-        }
-        catch(SQLException e){
-            JOptionPane.showMessageDialog(null ,e);
-        }
+        String strsql = "INSERT INTO formdaftar VALUES('"+IDotomatis()+"','"+nama.getText()+"','"+tgl.getText()+"','"+alamat.getText()+"','"+email.getText()+"','"+nohp.getText()+"')";
+        st.execute(strsql);
+        JOptionPane.showMessageDialog(this , "Data Anggota Berhasil Disimpan");
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(null, e);
     }
+}
     
-    private void IDotomatis(){
+    private String IDotomatis(){
         try{
             konekDb rama = new konekDb();
             Connection con = rama.Buka();            
             Statement st = con.createStatement();
             
-            String strsql = "SELECT * FROM anggota ORDER BY id_anggota";
-            ResultSet rs = st.executeQuery(strsql);
-            if(rs.next()){
-                String id_anggota=rs.getString("id_anggota").substring(1);
-                String an = ""+(Integer.parseInt(id_anggota)+1);
-                String Nol = "";
-                if (an.length()==1){
-                    Nol="0000";
-                }else if (an.length()==2){
-                    Nol="000";
-                }else if (an.length()==3){
-                    Nol="00";
-                }
-                nodaftar.setText("U"+Nol+an);
-            } else {
-                nodaftar.setText("U00001");
-            }
+            String strsql = "SELECT * FROM formdaftar ORDER BY nodaftar DESC LIMIT 1" ;
         }
+        
         catch(SQLException e){
             JOptionPane.showMessageDialog(null ,e);
         }
+        return "";
     }
     
-    public void clear(){
-        nodaftar.setText("");
-        nama.setText("");
-        tgl.setText("");
-        email.setText("");
-        nohp.setText("");
-        jalur.setSelectedItem("Aktif");
-    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -120,19 +64,15 @@ public class FormDaftar extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
         nodaftar = new javax.swing.JTextField();
         nama = new javax.swing.JTextField();
         tgl = new javax.swing.JTextField();
         email = new javax.swing.JTextField();
         nohp = new javax.swing.JTextField();
-        jalur = new javax.swing.JComboBox<>();
         input = new javax.swing.JButton();
         exit = new javax.swing.JButton();
         jLabel7 = new javax.swing.JLabel();
         alamat = new javax.swing.JTextField();
-        jLabel8 = new javax.swing.JLabel();
-        prodi = new javax.swing.JComboBox<>();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
 
@@ -148,8 +88,6 @@ public class FormDaftar extends javax.swing.JFrame {
 
         jLabel5.setText("No. HP");
 
-        jLabel6.setText("Jalur Pendaftaran");
-
         nodaftar.setEnabled(false);
 
         tgl.addActionListener(new java.awt.event.ActionListener() {
@@ -158,11 +96,9 @@ public class FormDaftar extends javax.swing.JFrame {
             }
         });
 
-        jalur.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "PMDK (Rapor)", "Reguler", "KIPK" }));
-
         input.setBackground(new java.awt.Color(51, 51, 255));
         input.setForeground(new java.awt.Color(255, 255, 255));
-        input.setText("DAFTAR");
+        input.setText("Lanjut");
         input.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 inputActionPerformed(evt);
@@ -171,7 +107,7 @@ public class FormDaftar extends javax.swing.JFrame {
 
         exit.setBackground(new java.awt.Color(204, 0, 0));
         exit.setForeground(new java.awt.Color(255, 255, 255));
-        exit.setText("BATAL");
+        exit.setText("Batal");
         exit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exitActionPerformed(evt);
@@ -180,17 +116,8 @@ public class FormDaftar extends javax.swing.JFrame {
 
         jLabel7.setText("Alamat");
 
-        jLabel8.setText("Pilih Prodi");
-
-        prodi.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Teknik Informatika - S1", "Sistem Informasi - S1", "Ilmu Komunikasi - S1", "Desain Komputer Visual - S1", "Animasi - D4" }));
-        prodi.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                prodiActionPerformed(evt);
-            }
-        });
-
         jLabel9.setFont(new java.awt.Font("Segoe UI", 3, 24)); // NOI18N
-        jLabel9.setText("FORM PENDAFTARAN MAHASISWA BARU 2024");
+        jLabel9.setText("FORM DATA DIRI ");
 
         jLabel10.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabel10.setText("Universitas Dian Nuswantoro Semarang");
@@ -202,53 +129,45 @@ public class FormDaftar extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(172, 172, 172)
-                        .addComponent(jLabel9))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(340, 340, 340)
-                        .addComponent(jLabel10)))
-                .addGap(0, 236, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(63, 63, 63)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+                        .addGap(63, 63, 63)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel6)
-                            .addComponent(jLabel8)
                             .addComponent(jLabel2)
                             .addComponent(jLabel3)
                             .addComponent(jLabel7)
                             .addComponent(jLabel4)
                             .addComponent(jLabel5)
                             .addComponent(jLabel1))
-                        .addGap(18, 18, 18)
+                        .addGap(27, 27, 27)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jalur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(nama, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(tgl, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(alamat, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(email, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(nohp, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                    .addComponent(nodaftar, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(159, 159, 159)))
-                            .addComponent(prodi, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(nama, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tgl, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(alamat, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(email, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(nodaftar, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(nohp, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(71, 71, 71))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addComponent(exit, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
+                                .addComponent(input, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(23, 23, 23)
-                        .addComponent(input, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(exit, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(90, 90, 90)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel9)
+                            .addComponent(jLabel10))))
+                .addContainerGap(37, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(19, 19, 19)
+                .addGap(7, 7, 7)
                 .addComponent(jLabel9)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel10)
-                .addGap(18, 18, 18)
+                .addGap(24, 24, 24)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(nodaftar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -270,21 +189,17 @@ public class FormDaftar extends javax.swing.JFrame {
                     .addComponent(email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel5)
-                    .addComponent(nohp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel6)
-                    .addComponent(jalur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel8)
-                    .addComponent(prodi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(exit)
-                    .addComponent(input))
-                .addGap(41, 41, 41))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel5)
+                            .addComponent(nohp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 62, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(exit)
+                            .addComponent(input))
+                        .addGap(38, 38, 38))))
         );
 
         pack();
@@ -303,19 +218,13 @@ public class FormDaftar extends javax.swing.JFrame {
                 JOptionPane.QUESTION_MESSAGE,null,null,null);
         if(simpan==JOptionPane.YES_OPTION){
             input_data();
-            load_data();
-            clear();
         }
     }//GEN-LAST:event_inputActionPerformed
 
     private void exitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitActionPerformed
         // TODO add your handling code here:
-        dispose();
+        this.dispose();
     }//GEN-LAST:event_exitActionPerformed
-
-    private void prodiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prodiActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_prodiActionPerformed
 
     /**
      * @param args the command line arguments
@@ -394,15 +303,11 @@ public class FormDaftar extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JComboBox<String> jalur;
     private javax.swing.JTextField nama;
     private javax.swing.JTextField nodaftar;
     private javax.swing.JTextField nohp;
-    private javax.swing.JComboBox<String> prodi;
     private javax.swing.JTextField tgl;
     // End of variables declaration//GEN-END:variables
 }
