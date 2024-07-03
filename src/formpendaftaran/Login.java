@@ -23,6 +23,17 @@ public class Login extends javax.swing.JFrame {
 
             String strsql = "SELECT * FROM user WHERE email ='" + email.getText() + "' and password ='" + pass.getText()+ "'";
             ResultSet rs = st.executeQuery(strsql);
+            
+            
+            if (rs.next()){
+                // login berhasil, buka halaman pendaftaran
+                FormDaftar FormDaftarFrame = new FormDaftar();
+                FormDaftarFrame.setVisible(true);
+                this.dispose();
+            } else {
+                //login gagal, popUp Error notif
+                JOptionPane.showMessageDialog(this,"Email atau Password Salah!");
+            }
         }
         catch(SQLException e)
         {
