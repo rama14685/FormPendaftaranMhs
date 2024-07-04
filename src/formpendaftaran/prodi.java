@@ -4,17 +4,29 @@
  */
 package formpendaftaran;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author HP
  */
 public class prodi extends javax.swing.JFrame {
 
-    /**
-     * Creates new form prodi
-     */
+   private Connection connection;
+
+    ArrayList<Jalur> arrJalur = new ArrayList<>();
+    ArrayList<ProdiClass> arrProdi = new ArrayList<>();
+    int id;
+    int id_jalur, id_pro;
+    
     public prodi() {
         initComponents();
+        
     }
 
     /**
@@ -44,6 +56,11 @@ public class prodi extends javax.swing.JFrame {
         jLabel6.setText("Jalur Pendaftaran :");
 
         jalur.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "PMDK (Rapor)", "Reguler", "KIPK" }));
+        jalur.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jalurActionPerformed(evt);
+            }
+        });
 
         jLabel8.setText("Pilih Prodi :");
 
@@ -120,10 +137,6 @@ public class prodi extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void prodiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prodiActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_prodiActionPerformed
-
     private void lanjutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lanjutActionPerformed
         // Redirect to Fix.java
     Fix fixWindow = new Fix(); 
@@ -131,9 +144,66 @@ public class prodi extends javax.swing.JFrame {
     this.dispose(); 
     }//GEN-LAST:event_lanjutActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
+    private void prodiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prodiActionPerformed
+        int idx = prodi.getSelectedIndex();
+        if(arrProdi.size() > 0){
+            id_pro = arrProdi.get(idx).getId();
+
+        }
+    }//GEN-LAST:event_prodiActionPerformed
+
+    private void jalurActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jalurActionPerformed
+        int idx = jalur.getSelectedIndex();
+        if(arrJalur.size() > 0){
+            id_jalur = arrProdi.get(idx).getId();
+
+        }
+    }//GEN-LAST:event_jalurActionPerformed
+
+    private void loadJalur(){
+        jalur.removeAllItems();
+        arrJalur.clear();
+        
+        String query = "SELECT * FROM jalur";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                int id = rs.getInt("id_jalur");
+                String namaJalur = rs.getString("jalur");
+                arrJalur.add(new Jalur(id, namaJalur));
+                jalur.addItem(namaJalur);
+            }
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Error loading jalur: " + ex.getMessage());
+        }
+    }
+    
+    private void loadProdi() {
+        prodi.removeAllItems();
+        
+        try {
+            ResultSet rs = DB.read("select id_prodi, prodi from prodi");
+//            Masukkan ke dalam kelas Fakultas (tampung)
+            while(rs.next()){
+                arrProdi.add(new ProdiClass(
+                    Integer.parseInt(rs.getString("id_prodi")),
+                    rs.getString("prodi")
+                ));
+            }
+//            ambil dari class fakultas dan munculkan pada combo box cbx_fakultas
+            for (int i =0; i < arrProdi.size(); i++){
+                prodi.addItem(arrProdi.get(i).getProdi());
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex.toString());
+        }
+    }
+    
+   
+    
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
