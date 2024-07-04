@@ -6,6 +6,7 @@ package formpendaftaran;
 
 import java.sql.*;
 import javax.swing.JOptionPane;
+import javax.swing.JComboBox;
 import javax.swing.table.DefaultTableModel;
 /**
  *
@@ -19,6 +20,8 @@ public class Prodi extends javax.swing.JFrame {
     public Prodi() {
         initComponents();
         hitungBiaya();
+        
+        jalur.addActionListener(e -> hitungBiaya());
     }
 
     private void input_data() {
@@ -97,35 +100,34 @@ public class Prodi extends javax.swing.JFrame {
     }
 
     private void hitungBiaya() {
-        // Dapatkan jalur pendaftaran yang dipilih
         String selectedJalur = (String) jalur.getSelectedItem();
 
-        // Variabel untuk menyimpan biaya
-        int biaya = 0;
+    // Variabel untuk menyimpan biaya
+    int biaya = 0;
 
-        // Tentukan biaya berdasarkan jalur pendaftaran
-        if (selectedJalur != null) {
-            switch (selectedJalur.trim()) { // Menghapus spasi kosong yang mungkin ada
-                case "PMDK":
-                    biaya = 18000000; // Biaya untuk jalur PMDK
-                    break;
-                case "Reguler":
-                    biaya = 26000000; // Biaya untuk jalur Reguler
-                    break;
-                case "KIP":
-                    biaya = 0; // Biaya untuk jalur KIP
-                    break;
-                default:
-                    JOptionPane.showMessageDialog(this, "Jalur pendaftaran tidak valid. Silakan pilih jalur pendaftaran yang sesuai.");
-                    return;
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Silakan pilih jalur pendaftaran terlebih dahulu.");
-            return;
+    // Tentukan biaya berdasarkan jalur pendaftaran
+    if (selectedJalur != null) {
+        switch (selectedJalur.trim()) { // Menghapus spasi kosong yang mungkin ada
+            case "PMDK":
+                biaya = 18000000; // Biaya untuk jalur PMDK
+                break;
+            case "Reguler":
+                biaya = 26000000; // Biaya untuk jalur Reguler
+                break;
+            case "KIPK":
+                biaya = 0; // Biaya untuk jalur KIP
+                break;
+            default:
+                JOptionPane.showMessageDialog(this, "Jalur pendaftaran tidak valid. Silakan pilih jalur pendaftaran yang sesuai.");
+                return;
         }
+    } else {
+        JOptionPane.showMessageDialog(this, "Silakan pilih jalur pendaftaran terlebih dahulu.");
+        return;
+    }
 
-        // Tampilkan biaya dalam format rupiah
-        totalBiaya.setText(String.format("Rp %,d", biaya));
+    // Set nilai biaya ke text field totalBiaya dengan format Rp
+    totalBiaya.setText(String.format("Rp %,d", biaya));
     }
     /**
      * This method is called from within the constructor to initialize the form.
