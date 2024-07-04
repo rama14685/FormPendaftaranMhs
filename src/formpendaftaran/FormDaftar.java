@@ -13,23 +13,37 @@ import javax.swing.table.DefaultTableModel;
  */
 public class FormDaftar extends javax.swing.JFrame {
 
-    /**
-     * Creates new form DataAnggotaa
-     */
+    
     public FormDaftar() {
         initComponents();
         IDotomatis();
     }
     
     private void input_data() {
-    try {
+     try {
+        IDotomatis();
+         
         konekDb rama = new konekDb();
         Connection con = rama.Buka();            
-        Statement st = con.createStatement();
 
-        String strsql = "INSERT INTO formdaftar VALUES('"+IDotomatis()+"','"+nama.getText()+"','"+tgl.getText()+"','"+alamat.getText()+"','"+email.getText()+"','"+nohp.getText()+"')";
-        st.execute(strsql);
-        JOptionPane.showMessageDialog(this , "Data Anggota Berhasil Disimpan");
+        String strsql = "INSERT INTO formdaftar (nodaftar, full_name, tanggal, alamat, email, nohp) VALUES (?, ?, ?, ?, ?, ?)";
+        PreparedStatement pst = con.prepareStatement(strsql);
+        pst.setString(1, nodaftar.getText()); // Ambil nilai nodaftar dari text field
+        pst.setString(2, nama.getText());
+        pst.setString(3, tgl.getText());
+        pst.setString(4, alamat.getText());
+        pst.setString(5, email.getText());
+        pst.setString(6, nohp.getText());
+        
+        int rowsAffected = pst.executeUpdate();
+        if (rowsAffected > 0) {
+            JOptionPane.showMessageDialog(this, "Data Diri Berhasil Disimpan");
+        } else {
+            JOptionPane.showMessageDialog(this, "Gagal menyimpan data");
+        }
+
+        // Tutup PreparedStatement
+        pst.close();
     } catch (SQLException e) {
         JOptionPane.showMessageDialog(null, e);
     }
@@ -41,7 +55,30 @@ public class FormDaftar extends javax.swing.JFrame {
             Connection con = rama.Buka();            
             Statement st = con.createStatement();
             
-            String strsql = "SELECT * FROM formdaftar ORDER BY nodaftar DESC LIMIT 1" ;
+            // Query untuk mengambil data terakhir berdasarkan nodaftar
+            String strsql = "SELECT * FROM formdaftar ORDER BY nodaftar DESC";
+            ResultSet rs = st.executeQuery(strsql);
+
+            // Variabel untuk menyimpan nodaftar baru
+            String nodaftarBaru;
+
+            // Memeriksa apakah ada data dalam tabel
+            if(rs.next()){
+                // Mengambil bagian numerik dari nodaftar terakhir dan menambah 1
+                String lastNodaftar = rs.getString("nodaftar").substring(1);
+                int newNodaftar = Integer.parseInt(lastNodaftar) + 1;
+
+                // Membuat format baru untuk nodaftar dengan pola D000
+                nodaftarBaru = String.format("D%03d", newNodaftar);
+            } else {
+                // Jika tidak ada data dalam tabel, mulai dari D001
+                nodaftarBaru = "D001";
+            }
+
+            // Menetapkan nilai nodaftar baru ke dalam text field dan mencegah pengeditan
+            nodaftar.setText(nodaftarBaru);
+            nodaftar.setEditable(false);  // Menonaktifkan pengeditan pada text field
+
         }
         
         catch(SQLException e){
@@ -69,7 +106,7 @@ public class FormDaftar extends javax.swing.JFrame {
         tgl = new javax.swing.JTextField();
         email = new javax.swing.JTextField();
         nohp = new javax.swing.JTextField();
-        input = new javax.swing.JButton();
+        lanjut = new javax.swing.JButton();
         exit = new javax.swing.JButton();
         jLabel7 = new javax.swing.JLabel();
         alamat = new javax.swing.JTextField();
@@ -96,12 +133,12 @@ public class FormDaftar extends javax.swing.JFrame {
             }
         });
 
-        input.setBackground(new java.awt.Color(51, 51, 255));
-        input.setForeground(new java.awt.Color(255, 255, 255));
-        input.setText("Lanjut");
-        input.addActionListener(new java.awt.event.ActionListener() {
+        lanjut.setBackground(new java.awt.Color(51, 51, 255));
+        lanjut.setForeground(new java.awt.Color(255, 255, 255));
+        lanjut.setText("Lanjut");
+        lanjut.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                inputActionPerformed(evt);
+                lanjutActionPerformed(evt);
             }
         });
 
@@ -152,7 +189,7 @@ public class FormDaftar extends javax.swing.JFrame {
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                         .addComponent(exit, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
-                                .addComponent(input, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(lanjut, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(90, 90, 90)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -198,7 +235,7 @@ public class FormDaftar extends javax.swing.JFrame {
                         .addGap(0, 62, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(exit)
-                            .addComponent(input))
+                            .addComponent(lanjut))
                         .addGap(38, 38, 38))))
         );
 
@@ -209,20 +246,19 @@ public class FormDaftar extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_tglActionPerformed
 
-    private void inputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inputActionPerformed
+    private void lanjutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lanjutActionPerformed
         // TODO add your handling code here:
-        int simpan = JOptionPane.showOptionDialog(this,
+         int simpan = JOptionPane.showOptionDialog(this,
                 "Apakah Data Sudah Sesuai? Simpan?",
                 "Simpan Data",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE,null,null,null);
         if(simpan==JOptionPane.YES_OPTION){
             input_data();
-            prodi prodiWindow = new prodi(); // Buat instance baru dari prodi.java
-            prodiWindow.setVisible(true); // Tampilkan window prodi.java
-            this.dispose();
         }
-    }//GEN-LAST:event_inputActionPerformed
+        this.dispose();
+        new Prodi().setVisible(true);
+    }//GEN-LAST:event_lanjutActionPerformed
 
     private void exitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitActionPerformed
         // TODO add your handling code here:
@@ -299,7 +335,6 @@ public class FormDaftar extends javax.swing.JFrame {
     private javax.swing.JTextField alamat;
     private javax.swing.JTextField email;
     private javax.swing.JButton exit;
-    private javax.swing.JButton input;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
@@ -308,6 +343,7 @@ public class FormDaftar extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JButton lanjut;
     private javax.swing.JTextField nama;
     private javax.swing.JTextField nodaftar;
     private javax.swing.JTextField nohp;
