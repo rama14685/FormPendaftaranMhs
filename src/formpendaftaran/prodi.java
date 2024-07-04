@@ -32,7 +32,7 @@ public class prodi extends javax.swing.JFrame {
         jLabel8 = new javax.swing.JLabel();
         prodi = new javax.swing.JComboBox<>();
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        lanjut = new javax.swing.JButton();
         jTextField1 = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
 
@@ -56,7 +56,12 @@ public class prodi extends javax.swing.JFrame {
 
         jButton1.setText("Batal");
 
-        jButton2.setText("Lanjut");
+        lanjut.setText("Lanjut");
+        lanjut.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                lanjutActionPerformed(evt);
+            }
+        });
 
         jLabel2.setText("Biaya Pendaftaran :");
 
@@ -85,7 +90,7 @@ public class prodi extends javax.swing.JFrame {
                         .addGap(171, 171, 171)
                         .addComponent(jButton1)
                         .addGap(48, 48, 48)
-                        .addComponent(jButton2)))
+                        .addComponent(lanjut)))
                 .addContainerGap(124, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -108,7 +113,7 @@ public class prodi extends javax.swing.JFrame {
                 .addGap(33, 33, 33)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
-                    .addComponent(jButton2))
+                    .addComponent(lanjut))
                 .addContainerGap(39, Short.MAX_VALUE))
         );
 
@@ -118,6 +123,13 @@ public class prodi extends javax.swing.JFrame {
     private void prodiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prodiActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_prodiActionPerformed
+
+    private void lanjutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lanjutActionPerformed
+        // Redirect to Fix.java
+    Fix fixWindow = new Fix(); 
+    fixWindow.setVisible(true); 
+    this.dispose(); 
+    }//GEN-LAST:event_lanjutActionPerformed
 
     /**
      * @param args the command line arguments
@@ -157,13 +169,13 @@ public class prodi extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JComboBox<String> jalur;
+    private javax.swing.JButton lanjut;
     private javax.swing.JComboBox<String> prodi;
     // End of variables declaration//GEN-END:variables
 }

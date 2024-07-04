@@ -218,6 +218,9 @@ public class FormDaftar extends javax.swing.JFrame {
                 JOptionPane.QUESTION_MESSAGE,null,null,null);
         if(simpan==JOptionPane.YES_OPTION){
             input_data();
+            prodi prodiWindow = new prodi(); // Buat instance baru dari prodi.java
+            prodiWindow.setVisible(true); // Tampilkan window prodi.java
+            this.dispose();
         }
     }//GEN-LAST:event_inputActionPerformed
 
