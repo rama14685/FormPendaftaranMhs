@@ -14,32 +14,48 @@ public class Login extends javax.swing.JFrame {
         initComponents();
     }
 
-    public void Login()
-    {
-        try {
-            konekDb rama = new konekDb();
-            Connection con = rama.Buka();
-            Statement st = con.createStatement();
+    public void Login() {
+    try {
+        konekDb rama = new konekDb();
+        Connection con = rama.Buka();
+        Statement st = con.createStatement();
 
-            String strsql = "SELECT * FROM user WHERE email ='" + email.getText() + "' and password ='" + pass.getText()+ "'";
-            ResultSet rs = st.executeQuery(strsql);
-            
-            
-            if (rs.next()){
-                // login berhasil, buka halaman pendaftaran
-                FormDaftar FormDaftarFrame = new FormDaftar();
-                FormDaftarFrame.setVisible(true);
-                this.dispose();
+<<<<<<< HEAD
+        String strsql = "SELECT * FROM user WHERE email ='" + email.getText() + "' and password ='" + pass.getText() + "'";
+        ResultSet rs = st.executeQuery(strsql);
+
+        if (rs.next()) {
+            String userId = rs.getString("id");  
+
+            String checkRegistrationQuery = "SELECT * FROM formdaftar WHERE id = ?";
+            PreparedStatement checkRegStmt = con.prepareStatement(checkRegistrationQuery);
+            checkRegStmt.setString(1, userId);
+
+            ResultSet regRs = checkRegStmt.executeQuery();
+
+            if (regRs.next()) {
+                new Prodi().setVisible(true);
+                this.dispose(); 
             } else {
-                //login gagal, popUp Error notif
-                JOptionPane.showMessageDialog(this,"Email atau Password Salah!");
+                Menu menu = new Menu();
+                menu.setVisible(true);
+                this.dispose(); 
             }
+
+            regRs.close();
+            checkRegStmt.close();
+        } else {
+            JOptionPane.showMessageDialog(this, "Email atau password salah. Silakan coba lagi.");
         }
-        catch(SQLException e)
-        {
-            JOptionPane.showMessageDialog(null ,e);
-        }
+
+        rs.close();
+        st.close();
+        con.close();
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(null, e);
     }
+}
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -228,8 +244,6 @@ public class Login extends javax.swing.JFrame {
     private void loginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginActionPerformed
         // TODO add your handling code here:
         Login();
-        Menu menu = new Menu();
-        menu.setVisible(true);
     }//GEN-LAST:event_loginActionPerformed
 
     /**
