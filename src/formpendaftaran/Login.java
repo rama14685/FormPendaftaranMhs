@@ -20,6 +20,7 @@ public class Login extends javax.swing.JFrame {
         Connection con = rama.Buka();
         Statement st = con.createStatement();
 
+<<<<<<< HEAD
         String strsql = "SELECT * FROM user WHERE email ='" + email.getText() + "' and password ='" + pass.getText() + "'";
         ResultSet rs = st.executeQuery(strsql);
 
