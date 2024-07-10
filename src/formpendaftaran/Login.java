@@ -8,52 +8,67 @@ import javax.swing.JOptionPane;
 
 
 public class Login extends javax.swing.JFrame {
-
-  
+    
     public Login() {
         initComponents();
     }
 
     public void Login() {
-    try {
-        konekDb rama = new konekDb();
-        Connection con = rama.Buka();
-        Statement st = con.createStatement();
+        try {
+            // Membuka koneksi ke database
+            konekDb rama = new konekDb();
+            Connection con = rama.Buka();
+            Statement st = con.createStatement();
 
-        String strsql = "SELECT * FROM user WHERE email ='" + email.getText() + "' and password ='" + pass.getText() + "'";
-        ResultSet rs = st.executeQuery(strsql);
+            // Query untuk memeriksa email dan password
+            String strsql = "SELECT * FROM user WHERE email = ? AND password = ?";
+            PreparedStatement pst = con.prepareStatement(strsql);
+            pst.setString(1, email.getText());
+            pst.setString(2, new String(pass.getPassword())); // Get password from JPasswordField
+            ResultSet rs = pst.executeQuery();
 
-        if (rs.next()) {
-            String userId = rs.getString("id");  
+            // Jika hasil query ditemukan
+            if (rs.next()) {
+                String userId = rs.getString("id");  // Ambil id pengguna dari database
 
-            String checkRegistrationQuery = "SELECT * FROM formdaftar WHERE id = ?";
-            PreparedStatement checkRegStmt = con.prepareStatement(checkRegistrationQuery);
-            checkRegStmt.setString(1, userId);
+                // Simpan id pengguna ke UserSession
+                UserSession.setUserId(userId);
 
-            ResultSet regRs = checkRegStmt.executeQuery();
+                // Query untuk memeriksa apakah pengguna sudah mendaftar di formdaftar
+                String checkRegistrationQuery = "SELECT * FROM formdaftar WHERE id = ?";
+                PreparedStatement checkRegStmt = con.prepareStatement(checkRegistrationQuery);
+                checkRegStmt.setString(1, userId);
+                ResultSet regRs = checkRegStmt.executeQuery();
 
-            if (regRs.next()) {
-                new Prodi().setVisible(true);
-                this.dispose(); 
+                // Jika pengguna sudah terdaftar
+                if (regRs.next()) {
+                    // Tampilkan form Prodi
+                    new Prodi().setVisible(true);
+                } else {
+                    // Tampilkan Menu jika pengguna belum mendaftar di formdaftar
+                    new Menu().setVisible(true);
+                }
+
+                // Menutup form login
+                this.dispose();
+
+                // Tutup ResultSet dan PreparedStatement
+                regRs.close();
+                checkRegStmt.close();
             } else {
-                Menu menu = new Menu();
-                menu.setVisible(true);
-                this.dispose(); 
+                // Jika email atau password salah
+                JOptionPane.showMessageDialog(this, "Email atau password salah. Silakan coba lagi.");
             }
 
-            regRs.close();
-            checkRegStmt.close();
-        } else {
-            JOptionPane.showMessageDialog(this, "Email atau password salah. Silakan coba lagi.");
+            // Tutup ResultSet, Statement, dan koneksi
+            rs.close();
+            pst.close();
+            st.close();
+            con.close();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, e);
         }
-
-        rs.close();
-        st.close();
-        con.close();
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(null, e);
     }
-}
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
