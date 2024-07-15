@@ -4,31 +4,131 @@
  */
 package formpendaftaran;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
+import java.sql.*;
 import javax.swing.JOptionPane;
-
+import javax.swing.JComboBox;
+import javax.swing.table.DefaultTableModel;
 /**
  *
  * @author HP
  */
-public class prodi extends javax.swing.JFrame {
+public class Prodi extends javax.swing.JFrame {
 
-   private Connection connection;
-
-    ArrayList<Jalur> arrJalur = new ArrayList<>();
-    ArrayList<ProdiClass> arrProdi = new ArrayList<>();
-    int id;
-    int id_jalur, id_pro;
-    
-    public prodi() {
+    /**
+     * Creates new form Prodi
+     */
+    public Prodi() {
         initComponents();
+        hitungBiaya();
         
+        jalur.addActionListener(e -> hitungBiaya());
     }
 
+    private void input_data() {
+        try {
+            konekDb rama = new konekDb();
+            Connection con = rama.Buka();    
+
+            // Ambil id user yang sedang login (sesuaikan dengan cara Anda mendapatkan id user)
+            String idUser = "12345"; // Gantikan dengan cara Anda mendapatkan id user
+
+            // Ambil nodaftar dari formdaftar berdasarkan id user
+            String nodaftarUser = getNodaftarUser(idUser);
+
+            // Pastikan nodaftarUser tidak kosong atau null
+            if (nodaftarUser == null || nodaftarUser.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "ID User tidak ditemukan. Pendaftaran tidak dapat dilanjutkan.");
+                return;
+            }
+
+            // Hitung biaya berdasarkan jalur pendaftaran yang dipilih
+            hitungBiaya();
+
+            // Pastikan totalBiaya sudah terisi
+            if (totalBiaya.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Biaya belum dihitung. Pastikan jalur pendaftaran dipilih.");
+                return;
+            }
+
+            // Menghilangkan simbol "Rp" dan koma pada biaya dan mengubahnya menjadi int
+            String biayaStr = totalBiaya.getText().replace("Rp ", "").replace(",", "").trim();
+            int biaya = Integer.parseInt(biayaStr);
+
+            // Query untuk memasukkan data ke tabel prodi
+            String strsql = "INSERT INTO prodi (nodaftar, jalur, prodi, biaya) VALUES (?, ?, ?, ?)";
+            PreparedStatement pst = con.prepareStatement(strsql);
+            pst.setString(1, nodaftarUser); // Gunakan nodaftar dari formdaftar
+            pst.setString(2, (String) jalur.getSelectedItem());
+            pst.setString(3, (String) prodi.getSelectedItem()); 
+            pst.setInt(4, biaya);
+
+            // Eksekusi perintah INSERT
+            int rowsAffected = pst.executeUpdate();
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(this, "Data Diri Berhasil Disimpan");
+            } else {
+                JOptionPane.showMessageDialog(this, "Gagal menyimpan data");
+            }
+
+            // Tutup PreparedStatement
+            pst.close();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, e);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Format biaya tidak valid. Pastikan biaya sudah dihitung dengan benar.");
+        }
+    }
+    private String getNodaftarUser(String idUser) throws SQLException {
+        String nodaftarUser = "";
+
+        konekDb rama = new konekDb();
+        Connection con = rama.Buka();            
+
+        String strsql = "SELECT nodaftar FROM formdaftar WHERE id = ?";
+        PreparedStatement pst = con.prepareStatement(strsql);
+        pst.setString(1, idUser);
+        ResultSet rs = pst.executeQuery();
+
+        if (rs.next()) {
+            nodaftarUser = rs.getString("nodaftar");
+        }
+
+        rs.close();
+        pst.close();
+
+        return nodaftarUser;
+    }
+
+    private void hitungBiaya() {
+        String selectedJalur = (String) jalur.getSelectedItem();
+
+    // Variabel untuk menyimpan biaya
+    int biaya = 0;
+
+    // Tentukan biaya berdasarkan jalur pendaftaran
+    if (selectedJalur != null) {
+        switch (selectedJalur.trim()) { // Menghapus spasi kosong yang mungkin ada
+            case "PMDK":
+                biaya = 18000000; // Biaya untuk jalur PMDK
+                break;
+            case "Reguler":
+                biaya = 26000000; // Biaya untuk jalur Reguler
+                break;
+            case "KIPK":
+                biaya = 0; // Biaya untuk jalur KIP
+                break;
+            default:
+                JOptionPane.showMessageDialog(this, "Jalur pendaftaran tidak valid. Silakan pilih jalur pendaftaran yang sesuai.");
+                return;
+        }
+    } else {
+        JOptionPane.showMessageDialog(this, "Silakan pilih jalur pendaftaran terlebih dahulu.");
+        return;
+    }
+
+    // Set nilai biaya ke text field totalBiaya dengan format Rp
+    totalBiaya.setText(String.format("Rp %,d", biaya));
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -39,48 +139,52 @@ public class prodi extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jalur = new javax.swing.JComboBox<>();
-        jLabel8 = new javax.swing.JLabel();
-        prodi = new javax.swing.JComboBox<>();
-        jButton1 = new javax.swing.JButton();
-        lanjut = new javax.swing.JButton();
-        jTextField1 = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jalur = new javax.swing.JComboBox<>();
+        prodi = new javax.swing.JComboBox<>();
+        totalBiaya = new javax.swing.JTextField();
+        daftar = new javax.swing.JButton();
+        batal = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 2, 24)); // NOI18N
-        jLabel1.setText("FORM PEMILIHAN PRODI");
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 3, 18)); // NOI18N
+        jLabel1.setText("FORM PENDAFTARAN");
 
-        jLabel6.setText("Jalur Pendaftaran :");
+        jLabel2.setText("Jalur Pendaftaran");
 
-        jalur.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "PMDK (Rapor)", "Reguler", "KIPK" }));
-        jalur.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jalurActionPerformed(evt);
+        jLabel3.setText("Program Studi");
+
+        jLabel4.setText("Biaya Pendaftaran");
+
+        jalur.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "PMDK", "Reguler", "KIPK" }));
+        jalur.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jalurMouseClicked(evt);
             }
         });
 
-        jLabel8.setText("Pilih Prodi :");
+        prodi.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Teknik Informatika - S1", "Sistem Informasi - S1", "Desain Komputer Visual - S1", "Ilmu Komunikasi - S1" }));
 
-        prodi.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Teknik Informatika - S1", "Sistem Informasi - S1", "Ilmu Komunikasi - S1", "Desain Komputer Visual - S1", "Animasi - D4" }));
-        prodi.addActionListener(new java.awt.event.ActionListener() {
+        daftar.setBackground(new java.awt.Color(51, 0, 255));
+        daftar.setForeground(new java.awt.Color(255, 255, 255));
+        daftar.setText("Daftar");
+        daftar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                prodiActionPerformed(evt);
+                daftarActionPerformed(evt);
             }
         });
 
-        jButton1.setText("Batal");
-
-        lanjut.setText("Lanjut");
-        lanjut.addActionListener(new java.awt.event.ActionListener() {
+        batal.setBackground(new java.awt.Color(255, 51, 0));
+        batal.setForeground(new java.awt.Color(255, 255, 255));
+        batal.setText("Batal");
+        batal.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                lanjutActionPerformed(evt);
+                batalActionPerformed(evt);
             }
         });
-
-        jLabel2.setText("Biaya Pendaftaran :");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -88,122 +192,83 @@ public class prodi extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(82, 82, 82)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel6)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(99, 99, 99)
+                            .addComponent(jLabel1))
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(44, 44, 44)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel3)
                                 .addComponent(jLabel2)
-                                .addComponent(jLabel8)))
-                        .addGap(41, 41, 41)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(prodi, 0, 207, Short.MAX_VALUE)
-                            .addComponent(jalur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jTextField1)))
+                                .addComponent(jLabel4))
+                            .addGap(18, 18, 18)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(prodi, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(totalBiaya)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(jalur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGap(0, 0, Short.MAX_VALUE)))))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(137, 137, 137)
-                        .addComponent(jLabel1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(171, 171, 171)
-                        .addComponent(jButton1)
-                        .addGap(48, 48, 48)
-                        .addComponent(lanjut)))
-                .addContainerGap(124, Short.MAX_VALUE))
+                        .addGap(105, 105, 105)
+                        .addComponent(batal)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(daftar)))
+                .addContainerGap(42, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(26, 26, 26)
+                .addGap(27, 27, 27)
                 .addComponent(jLabel1)
-                .addGap(28, 28, 28)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
+                    .addComponent(jLabel2)
                     .addComponent(jalur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel8)
-                    .addComponent(prodi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(33, 33, 33)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(lanjut))
-                .addContainerGap(39, Short.MAX_VALUE))
+                    .addComponent(jLabel3)
+                    .addComponent(prodi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(totalBiaya, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(34, 34, 34)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(daftar)
+                    .addComponent(batal))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void lanjutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lanjutActionPerformed
-        // Redirect to Fix.java
-    Fix fixWindow = new Fix(); 
-    fixWindow.setVisible(true); 
-    this.dispose(); 
-    }//GEN-LAST:event_lanjutActionPerformed
+    private void batalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_batalActionPerformed
+        // TODO add your handling code here:
+        this.dispose();
+    }//GEN-LAST:event_batalActionPerformed
 
-    private void prodiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prodiActionPerformed
-        int idx = prodi.getSelectedIndex();
-        if(arrProdi.size() > 0){
-            id_pro = arrProdi.get(idx).getId();
-
+    private void daftarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_daftarActionPerformed
+        // TODO add your handling code here:
+        int simpan = JOptionPane.showOptionDialog(this,
+                "Apakah Data Sudah Sesuai? Simpan?",
+                "Simpan Data",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,null,null,null);
+        if(simpan==JOptionPane.YES_OPTION){
+            input_data();
+            new Fix().setVisible(true);
         }
-    }//GEN-LAST:event_prodiActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_daftarActionPerformed
 
-    private void jalurActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jalurActionPerformed
-        int idx = jalur.getSelectedIndex();
-        if(arrJalur.size() > 0){
-            id_jalur = arrProdi.get(idx).getId();
+    private void jalurMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jalurMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jalurMouseClicked
 
-        }
-    }//GEN-LAST:event_jalurActionPerformed
-
-    private void loadJalur(){
-        jalur.removeAllItems();
-        arrJalur.clear();
-        
-        String query = "SELECT * FROM jalur";
-
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-
-            while (rs.next()) {
-                int id = rs.getInt("id_jalur");
-                String namaJalur = rs.getString("jalur");
-                arrJalur.add(new Jalur(id, namaJalur));
-                jalur.addItem(namaJalur);
-            }
-
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, "Error loading jalur: " + ex.getMessage());
-        }
-    }
-    
-    private void loadProdi() {
-        prodi.removeAllItems();
-        
-        try {
-            ResultSet rs = DB.read("select id_prodi, prodi from prodi");
-//            Masukkan ke dalam kelas Fakultas (tampung)
-            while(rs.next()){
-                arrProdi.add(new ProdiClass(
-                    Integer.parseInt(rs.getString("id_prodi")),
-                    rs.getString("prodi")
-                ));
-            }
-//            ambil dari class fakultas dan munculkan pada combo box cbx_fakultas
-            for (int i =0; i < arrProdi.size(); i++){
-                prodi.addItem(arrProdi.get(i).getProdi());
-            }
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex.toString());
-        }
-    }
-    
-   
-    
+    /**
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -218,34 +283,33 @@ public class prodi extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(prodi.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Prodi.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(prodi.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Prodi.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(prodi.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Prodi.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(prodi.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Prodi.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new prodi().setVisible(true);
+                new Prodi().setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton batal;
+    private javax.swing.JButton daftar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JComboBox<String> jalur;
-    private javax.swing.JButton lanjut;
     private javax.swing.JComboBox<String> prodi;
+    private javax.swing.JTextField totalBiaya;
     // End of variables declaration//GEN-END:variables
 }
