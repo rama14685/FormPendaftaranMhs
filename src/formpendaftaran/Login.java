@@ -15,60 +15,70 @@ public class Login extends javax.swing.JFrame {
 
     public void Login() {
         try {
-            // Membuka koneksi ke database
             konekDb rama = new konekDb();
             Connection con = rama.Buka();
             Statement st = con.createStatement();
 
-            // Query untuk memeriksa email dan password
-            String strsql = "SELECT * FROM user WHERE email = ? AND password = ?";
-            PreparedStatement pst = con.prepareStatement(strsql);
-            pst.setString(1, email.getText());
-            pst.setString(2, new String(pass.getPassword())); // Get password from JPasswordField
-            ResultSet rs = pst.executeQuery();
+            String strsql = "SELECT * FROM user WHERE email ='" + email.getText() + "' and password ='" + pass.getText() + "'";
+            ResultSet rs = st.executeQuery(strsql);
 
-            // Jika hasil query ditemukan
             if (rs.next()) {
-                String userId = rs.getString("id");  // Ambil id pengguna dari database
+                String userId = rs.getString("id");
+                UserSession.setUserId(userId); // Set userId ke UserSession
 
-                // Simpan id pengguna ke UserSession
-                UserSession.setUserId(userId);
+                String checkFormDaftar = "SELECT * FROM formdaftar WHERE id = ?";
+                PreparedStatement checkFormDaftarStmt = con.prepareStatement(checkFormDaftar);
+                checkFormDaftarStmt.setString(1, userId);
 
-                // Query untuk memeriksa apakah pengguna sudah mendaftar di formdaftar
-                String checkRegistrationQuery = "SELECT * FROM formdaftar WHERE id = ?";
-                PreparedStatement checkRegStmt = con.prepareStatement(checkRegistrationQuery);
-                checkRegStmt.setString(1, userId);
-                ResultSet regRs = checkRegStmt.executeQuery();
+                ResultSet formDaftarRs = checkFormDaftarStmt.executeQuery();
 
-                // Jika pengguna sudah terdaftar
-                if (regRs.next()) {
-                    // Tampilkan form Prodi
-                    new Prodi().setVisible(true);
+                if (formDaftarRs.next()) {
+                    // Jika sudah mengisi formdaftar, cek apakah sudah mengisi prodi
+                    String checkProdiQuery = "SELECT COUNT(*) AS count FROM prodi WHERE nodaftar = ?";
+                    PreparedStatement checkProdiStmt = con.prepareStatement(checkProdiQuery);
+                    checkProdiStmt.setString(1, formDaftarRs.getString("nodaftar"));
+                    ResultSet prodiRs = checkProdiStmt.executeQuery();
+
+                    int rowCount = 0;
+                    if (prodiRs.next()) {
+                        rowCount = prodiRs.getInt("count");
+                    }
+
+                    prodiRs.close();
+                    checkProdiStmt.close();
+
+                    if (rowCount > 0) {
+                        // Jika sudah input prodi, buka halaman editcetak
+                        EditCetak editCetak = new EditCetak();
+                        editCetak.setVisible(true);
+                        this.dispose(); // Menutup form login saat ini
+                    } else {
+                        // Jika belum input prodi, buka form Prodi
+                        Prodi prodiForm = new Prodi();
+                        prodiForm.setVisible(true);
+                        this.dispose(); // Menutup form login saat ini
+                    }
                 } else {
-                    // Tampilkan Menu jika pengguna belum mendaftar di formdaftar
-                    new Menu().setVisible(true);
+                    // Jika belum input formdaftar, buka halaman menu
+                    Menu menu = new Menu();
+                    menu.setVisible(true);
+                    this.dispose(); // Menutup form login saat ini
                 }
 
-                // Menutup form login
-                this.dispose();
-
-                // Tutup ResultSet dan PreparedStatement
-                regRs.close();
-                checkRegStmt.close();
+                formDaftarRs.close();
+                checkFormDaftarStmt.close();
             } else {
-                // Jika email atau password salah
                 JOptionPane.showMessageDialog(this, "Email atau password salah. Silakan coba lagi.");
             }
 
-            // Tutup ResultSet, Statement, dan koneksi
             rs.close();
-            pst.close();
             st.close();
             con.close();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, e);
         }
     }
+
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
