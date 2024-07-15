@@ -29,8 +29,8 @@ public class Prodi extends javax.swing.JFrame {
             konekDb rama = new konekDb();
             Connection con = rama.Buka();    
 
-            // Ambil id user yang sedang login (sesuaikan dengan cara Anda mendapatkan id user)
-            String idUser = "12345"; // Gantikan dengan cara Anda mendapatkan id user
+            // Ambil id user yang sedang login dari UserSession
+            String idUser = UserSession.getUserId();
 
             // Ambil nodaftar dari formdaftar berdasarkan id user
             String nodaftarUser = getNodaftarUser(idUser);
@@ -38,6 +38,7 @@ public class Prodi extends javax.swing.JFrame {
             // Pastikan nodaftarUser tidak kosong atau null
             if (nodaftarUser == null || nodaftarUser.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "ID User tidak ditemukan. Pendaftaran tidak dapat dilanjutkan.");
+                this.dispose();
                 return;
             }
 
@@ -72,12 +73,14 @@ public class Prodi extends javax.swing.JFrame {
 
             // Tutup PreparedStatement
             pst.close();
+            con.close();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, e);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Format biaya tidak valid. Pastikan biaya sudah dihitung dengan benar.");
         }
     }
+
     private String getNodaftarUser(String idUser) throws SQLException {
         String nodaftarUser = "";
 
@@ -95,6 +98,7 @@ public class Prodi extends javax.swing.JFrame {
 
         rs.close();
         pst.close();
+        con.close(); // Tambahkan penutupan koneksi di sini
 
         return nodaftarUser;
     }
@@ -102,33 +106,34 @@ public class Prodi extends javax.swing.JFrame {
     private void hitungBiaya() {
         String selectedJalur = (String) jalur.getSelectedItem();
 
-    // Variabel untuk menyimpan biaya
-    int biaya = 0;
+        // Variabel untuk menyimpan biaya
+        int biaya = 0;
 
-    // Tentukan biaya berdasarkan jalur pendaftaran
-    if (selectedJalur != null) {
-        switch (selectedJalur.trim()) { // Menghapus spasi kosong yang mungkin ada
-            case "PMDK":
-                biaya = 18000000; // Biaya untuk jalur PMDK
-                break;
-            case "Reguler":
-                biaya = 26000000; // Biaya untuk jalur Reguler
-                break;
-            case "KIPK":
-                biaya = 0; // Biaya untuk jalur KIP
-                break;
-            default:
-                JOptionPane.showMessageDialog(this, "Jalur pendaftaran tidak valid. Silakan pilih jalur pendaftaran yang sesuai.");
-                return;
+        // Tentukan biaya berdasarkan jalur pendaftaran
+        if (selectedJalur != null) {
+            switch (selectedJalur.trim()) { // Menghapus spasi kosong yang mungkin ada
+                case "PMDK":
+                    biaya = 18000000; // Biaya untuk jalur PMDK
+                    break;
+                case "Reguler":
+                    biaya = 26000000; // Biaya untuk jalur Reguler
+                    break;
+                case "KIPK":
+                    biaya = 0; // Biaya untuk jalur KIP
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(this, "Jalur pendaftaran tidak valid. Silakan pilih jalur pendaftaran yang sesuai.");
+                    return;
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Silakan pilih jalur pendaftaran terlebih dahulu.");
+            return;
         }
-    } else {
-        JOptionPane.showMessageDialog(this, "Silakan pilih jalur pendaftaran terlebih dahulu.");
-        return;
+
+        // Set nilai biaya ke text field totalBiaya dengan format Rp
+        totalBiaya.setText(String.format("Rp %,d", biaya));
     }
 
-    // Set nilai biaya ke text field totalBiaya dengan format Rp
-    totalBiaya.setText(String.format("Rp %,d", biaya));
-    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -257,7 +262,7 @@ public class Prodi extends javax.swing.JFrame {
                 JOptionPane.QUESTION_MESSAGE,null,null,null);
         if(simpan==JOptionPane.YES_OPTION){
             input_data();
-            new Fix().setVisible(true);
+            new EditCetak().setVisible(true);
         }
         this.dispose();
     }//GEN-LAST:event_daftarActionPerformed
